@@ -24,7 +24,6 @@ import javax.swing.border.EmptyBorder;
 
 import util.CsvUtil;
 import util.RollcallUtil;
-import util.winEventHandle;
 import entity.Student;
 
 public class MySwing extends JFrame implements ActionListener, ItemListener{
@@ -34,16 +33,20 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 	public MySwing() {
 		super("一个小小的点名软件");
 		setBounds(200, 200, 450, 350);
-		this.addWindowListener(new winEventHandle());//窗口监听
+//		this.addWindowListener(new winEventHandle());//窗口监听
 	}
 
 	public void init() {
+		
+		JFrame mainJFrame = this;
+		
 		//菜单栏
 		MenuBar myB = new MenuBar();// 创建菜单组
 		setMenuBar(myB);
 		Menu m1 = new Menu("操作");// 创建菜单对象
 		m1.add(new MenuItem("抽取三人"));
 		m1.add(new MenuItem("随机选择"));
+		m1.add(new MenuItem("数据重置"));
 //		MenuItem m11 = new MenuItem("保存");// 创建菜单项
 //		m11.setEnabled(false);// 禁用
 //		m1.add(m11);// 添加到菜单
@@ -57,11 +60,8 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 		m2.addActionListener(this);
 		myB.add(m2);
 
-		
-		
 		//读入文件
 		students = CsvUtil.readEntity();
-//		System.out.println(students.get(3).getName());
 		
 		//复选框
 		JPanel contentPane=new JPanel();  
@@ -92,7 +92,7 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 	            	String answer = "";
 	            	
 	            	List<Student> todayStus = RollcallUtil.getStu_team(students, selectedNum);
-	            	if(todayStus.size() == 5){
+	            	if(todayStus.size() == 5 ){
 	            		//获取时间戳选择回答问题的人
 	            		long time = System.currentTimeMillis();
 	                	if(time % 2 == 0){
@@ -114,58 +114,21 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 	            		System.out.println("讲ppt：" + todayStus.get(0).getName());
 	            		ppt = "讲ppt：" + todayStus.get(0).getStu_id() + todayStus.get(0).getName() + "  " + "\n";
 	            		System.out.println("回答问题：" + todayStus.get(0).getName());
-	            		answer = "回答问题：" + todayStus.get(0).getStu_id() + todayStus.get(0).getName() + "  " + "\n";
+	            		answer = "回答问题：" + todayStus.get(0).getStu_id() + todayStus.get(0).getName() + "  ";
 	            		for(int i = 1; i < todayStus.size(); i++){
 	                		System.out.println("提问者：" + todayStus.get(i).getName());
 	                		ask += "提问者：" + todayStus.get(i).getStu_id() + todayStus.get(i).getName() + "  " + "\n";
 	                	}
 	            	}
 	            	else{
-	            		ppt = "已经点过一次了";
+	            		ppt = "所有人都回答过了啊！！误操作太多了吧！！";
 	            	}
 	            	//保存文件
 	            	CsvUtil.csvWriter(students);
 	            	
-	            	
-	            	//创建JDialog窗口对象
-	    			JDialog dialog = new JDialog();
-	    			dialog.setBounds(200, 200, 450, 350);
-	    			
-	    			JPanel panel = new JPanel(); 
-	    			JLabel label=new JLabel("第" + selectedNum + "组");
-	    			JTextArea textarea = new JTextArea();
-	    			textarea.setText(ppt + answer);
-	    			JTextArea textarea2 = new JTextArea(); 
-	    			textarea2.setText(ask);
-	    			textarea2.setVisible(false);
-	    			JButton button_in = new JButton("显示提问者");
-	    			count = 0;
-	    			button_in.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent arg0) {
-							count = count + 1;
-							if(count%2 == 1){
-								textarea2.setVisible(true);
-								button_in.setText("隐藏提问者");
-							}else{
-								textarea2.setVisible(false);
-								button_in.setText("显示提问者");
-							}
-							
-						}
-					});
-	    			if(ask.equals("")){
-	    				button_in.setVisible(false);
-	    			}
-	    			panel.add(label);
-	    			panel.add(textarea);
-	    			panel.add(button_in);
-	    			panel.add(textarea2);
-	    			
-	    			dialog.add(panel);
-	    			dialog.setVisible(true);
+	            	JFrame groupJFrame = new GroupFrame(selectedNum, ppt, ask, answer, mainJFrame);
 	    		}
-	            		            
+				
 	        }
         );
         button.setBounds(137, 10, 84, 25);
@@ -201,7 +164,7 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 				textContent += student.getStu_id() + "  " + student.getName() + "  ";
 				textContent += "\n";
 			}
-			createRCWindow(textContent);
+			createDialogWindow(textContent);
 			//保存文件
 			CsvUtil.csvWriter(students);
 			break;
@@ -212,15 +175,22 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 				textContent += student.getStu_id() + "  " + student.getName() + "  ";
 				textContent += "\n ";
 			}
-			createRCWindow(textContent);
+			createDialogWindow(textContent);
 			//保存文件
 			CsvUtil.csvWriter(students);
+			break;
+		case "数据重置":
+			//重置回答数据
+			CsvUtil.resetCSV();
+			createDialogWindow("重置成功");
+			//重新读入文件
+			students = CsvUtil.readEntity();
 			break;
 		case "帮助":
 			String textContent2 = "1.下拉菜单选中组数进行抽签  \n"
 					+ "2.操作菜单可以进行随机点名  \n"
 					+ "3.退出可以直接点击右上角，  \n也可以在操作菜单中退出  \n";
-			createRCWindow(textContent2);
+			createDialogWindow(textContent2);
 			break;
 		case "关于":
 			break;
@@ -232,11 +202,14 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 		}
 	}   
 	
-	
-	public void createRCWindow(String textContent){
+	/**
+	 * 创建弹窗
+	 * @param textContent 内容
+	 */
+	public static void createDialogWindow(String textContent){
 		//创建JDialog窗口对象
 		JDialog dialog = new JDialog();
-		dialog.setBounds(200, 200, 450, 350);
+		dialog.setBounds(250, 250, 300, 180);
 		
 		JPanel panel = new JPanel(); 
 		JTextArea textarea = new JTextArea();
@@ -267,5 +240,124 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 		}
 	}
 	
+	
+	private void GroupJFrame(String selectedNum, String ppt,
+			String ask, String answer) {
+		//创建JDialog窗口对象
+		
+		JFrame jFrame = new JFrame();
+		jFrame.setBounds(200, 200, 450, 350);
+		
+		JPanel panel = new JPanel(); 
+		JLabel label=new JLabel("第" + selectedNum + "组");
+		JTextArea textarea = new JTextArea();
+		textarea.setText(ppt + answer);
+		JTextArea textarea2 = new JTextArea(); 
+		textarea2.setText(ask);
+		textarea2.setVisible(false);
+		JButton button_in = new JButton("显示提问者");
+		count = 0;
+		button_in.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				count = count + 1;
+				if(count%2 == 1){
+					textarea2.setVisible(true);
+					button_in.setText("隐藏提问者");
+				}else{
+					textarea2.setVisible(false);
+					button_in.setText("显示提问者");
+				}
+				
+			}
+		});
+		if(ask.equals("")){
+			button_in.setVisible(false);
+		}
+		panel.add(label);
+		panel.add(textarea);
+		panel.add(button_in);
+		panel.add(textarea2);
+		jFrame.add(panel);
+		jFrame.setVisible(true);
+	}
+	
+	
+}
+
+class GroupFrame extends JFrame implements ActionListener, ItemListener{
+
+	int count;//显示与隐藏计数器
+	
+	public GroupFrame(String selectedNum, String ppt,
+			String ask, String answer, JFrame mainFrame) {
+		
+		super("点名");
+		JFrame groupFrame = this;
+		
+		setBounds(200, 200, 450, 350);
+		
+		JPanel panel = new JPanel(); 
+		JLabel label=new JLabel("第" + selectedNum + "组");
+		JTextArea textarea = new JTextArea();
+		textarea.setText(ppt + answer);
+		JTextArea textarea2 = new JTextArea(); 
+		textarea2.setText(ask);
+		textarea2.setVisible(false);
+		JButton button_in = new JButton("显示提问者");
+		count = 0;
+		button_in.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				count = count + 1;
+				if(count%2 == 1){
+					textarea2.setVisible(true);
+					button_in.setText("隐藏提问者");
+				}else{
+					textarea2.setVisible(false);
+					button_in.setText("显示提问者");
+				}
+				
+			}
+		});
+		if(ask.equals("")){
+			button_in.setVisible(false);
+		}
+		
+		JButton button_back = new JButton("返回");
+		button_back.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mainFrame.setVisible(true);
+//				groupFrame.setVisible(false);
+				//dispose释放内存
+				groupFrame.dispose();
+			}
+		});
+		
+		panel.add(label);
+		panel.add(textarea);
+		panel.add(button_in);
+		panel.add(button_back);
+		panel.add(textarea2);
+		
+		add(panel);
+		setVisible(true);
+		
+		setBounds(200, 200, 450, 350);
+		//this.addWindowListener(windowListener);//窗口监听
+		mainFrame.setVisible(false);
+	}
+	
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+	}
 	
 }

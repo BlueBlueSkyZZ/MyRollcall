@@ -3,12 +3,19 @@ package util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+import swing.MySwing;
 import entity.Student;
 
 public class CsvUtil {
@@ -77,18 +84,62 @@ public class CsvUtil {
             write.close();
             writer.close();
 			
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
+			DialogMethod("文件正在被占用或不存在\n请关闭文件后使用");
+			e.printStackTrace();
+		} catch (IOException e){
+			DialogMethod("文件出现了一些错误");
 			e.printStackTrace();
 		}
 		
 	}
+
+	private static void DialogMethod(String content) {
+		//创建JDialog窗口对象
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		dialog.setBounds(500, 250, 300, 180);
+		
+		JPanel panel = new JPanel(); 
+		JTextArea textarea = new JTextArea();
+		textarea.setText(content);
+		
+		panel.add(textarea);
+		
+		dialog.add(panel);
+		dialog.setVisible(true);
+	}
+	
+	public static void resetCSV(){
+		File csv = new File("students初始版.csv"); // CSV文件路径
+		
+		List<Student> students = new ArrayList<Student>();
+		
+		try {
+			reader = new BufferedReader(new FileReader(csv));
+		
+			reader.readLine();// 第一行信息，为标题信息,不做处理
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				Student stu = new Student();
+				String item[] = line.split(",");// CSV格式文件为逗号分隔符文件，这里根据逗号切分
+				stu.setId(item[0]);
+				stu.setTeam(item[1]);
+				stu.setName(item[2]);
+				stu.setStu_id(item[3]);
+				stu.setAnswer_num(item[4]);
+				stu.setTeam_status(item[5]);
+				stu.setAnswer_level(item[6]);
+				students.add(stu);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		csvWriter(students);
+	}
 	
 	public static void main(String[] args) {
-//		json();
-//		File csv = new File();
-		List<Student> students = new ArrayList<Student>();
-		students = readEntity();
-//		cvsWriter(students, "F:\\");
+		resetCSV();
 	}
 
 }

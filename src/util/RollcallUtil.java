@@ -133,10 +133,11 @@ public class RollcallUtil {
 		
 		for (Student student : students) {
 			if(student.getTeam().equals(today_team)){
-				if(student.getTeam_status().equals("waiting")){
+				//取消了无法被重复选中的限制
+				//if(student.getTeam_status().equals("waiting")){
 					student.setTeam_status("finished");
 					todayStus.add(student);
-				}
+				//}
 			}
 		}
 		//已经被选中过，返回空集
@@ -146,9 +147,48 @@ public class RollcallUtil {
 		}
 		
 		for(int i = 0; i < 3; i++){
-			todayStus.add(getLuckyStu(students, today_team));
+//			todayStus.add(getLuckyStu(students, today_team));
+			Student student = getLuckyStu2(students, today_team);
+			if(student != null){
+				todayStus.add(student);
+			}
+			
 		}
 		return todayStus;
 		
+	}
+	
+	/**
+	 * 第二种点名方式，通过计算得出均匀分布状态下最大的回答次数
+	 * @param students
+	 * @param today_team
+	 * @return
+	 */
+	public static Student getLuckyStu2(List<Student> students, String today_team){
+		int teamNum = Integer.valueOf(students.get(students.size()-1).getTeam());
+		int peopleNum = students.size();
+		List<Student> stuPool = new ArrayList<Student>();
+		//整除多加1的原因是因为增加容错率，但几乎可以忽略，因为正常情况下无法整除,teamNum*3/peopleNum的期望为1.5
+		int maxAnswer = ((teamNum*3) % peopleNum == 0) ?
+				((teamNum*3) / peopleNum + 1) : ((teamNum*3) / peopleNum + 1);
+		int answer_num = 0;
+		for (Student student : students) {
+			if(!student.getTeam().equals(today_team)){
+				answer_num = Integer.valueOf(student.getAnswer_num());
+				if(answer_num < maxAnswer){
+					stuPool.add(student);
+				}
+			}
+		}
+		if(stuPool.size() != 0){
+			//生成随机数，math.random左闭右开，如果越界可能在这
+			int luckyNum =  (int)(Math.random() * stuPool.size());
+			Student luckyStu = stuPool.get(luckyNum);
+			answer_num = Integer.valueOf(luckyStu.getAnswer_num());
+			//回答数加一
+			luckyStu.setAnswer_num( (answer_num+1) + "" );
+			return luckyStu;
+		}
+		return null;
 	}
 }

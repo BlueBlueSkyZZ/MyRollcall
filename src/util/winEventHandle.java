@@ -2,11 +2,9 @@ package util;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.List;
-
-import entity.Student;
 
 public class winEventHandle implements WindowListener {
+	
 	
 	
 	@Override
