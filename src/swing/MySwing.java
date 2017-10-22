@@ -44,12 +44,9 @@ public class MySwing extends JFrame implements ActionListener, ItemListener{
 		MenuBar myB = new MenuBar();// 创建菜单组
 		setMenuBar(myB);
 		Menu m1 = new Menu("操作");// 创建菜单对象
-		m1.add(new MenuItem("抽取三人"));
-		m1.add(new MenuItem("随机选择"));
+//		m1.add(new MenuItem("抽取三人"));
+//		m1.add(new MenuItem("随机选择"));
 		m1.add(new MenuItem("数据重置"));
-//		MenuItem m11 = new MenuItem("保存");// 创建菜单项
-//		m11.setEnabled(false);// 禁用
-//		m1.add(m11);// 添加到菜单
 		m1.addSeparator();// 添加分隔线
 		m1.add("退出");
 		m1.addActionListener(this);// 监听m1

@@ -87,6 +87,7 @@ public class CsvUtil {
 		} catch (FileNotFoundException e) {
 			DialogMethod("文件正在被占用或不存在\n请关闭文件后使用");
 			e.printStackTrace();
+			System.exit(1);;
 		} catch (IOException e){
 			DialogMethod("文件出现了一些错误");
 			e.printStackTrace();

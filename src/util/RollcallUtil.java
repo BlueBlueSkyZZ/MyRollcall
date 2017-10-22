@@ -7,6 +7,13 @@ import entity.Student;
 
 public class RollcallUtil {
 
+	//无限制随机点名使用
+	/**
+	 * 随机点名用的学生池
+	 * @param students
+	 * @param stu_num
+	 * @return
+	 */
 	public static List<Student> getStu_ask(List<Student> students, int stu_num){
 		
 		//获取需要回答问题的同学
@@ -32,6 +39,7 @@ public class RollcallUtil {
 		return students;
 	}
 	
+	//抽取小组使用
 	/**
 	 * 判断是否需要提升轮数
 	 * @param students
@@ -145,15 +153,17 @@ public class RollcallUtil {
 			System.out.println("空集");
 			return todayStus;
 		}
-		
+		//用于存储当前轮提问者防止重复
+		List<Student> tempStu = new ArrayList<Student>();
 		for(int i = 0; i < 3; i++){
-//			todayStus.add(getLuckyStu(students, today_team));
-			Student student = getLuckyStu2(students, today_team);
+//			Student student = getLuckyStu2(students, today_team);
+			Student student = getLuckyStu3(students, today_team, tempStu);
 			if(student != null){
 				todayStus.add(student);
 			}
-			
 		}
+		//清空存储器
+		tempStu.clear();
 		return todayStus;
 		
 	}
@@ -190,5 +200,82 @@ public class RollcallUtil {
 			return luckyStu;
 		}
 		return null;
+	}
+	
+	/**
+	 * 第三种点名方式，概率论二项分布方法，使得点完所有次数之前所有人都回答过
+	 * 限制：目前完成的是最大回答为2的情况，暂时并未扩展
+	 * @param students
+	 * @param today_team
+	 * @return
+	 */
+	private static Student getLuckyStu3(List<Student> students, String today_team, List<Student> tempStu){
+		//设λ为0.9，小于0.9取回答次数为0的人，大于0.9取回答次数为1的人
+		//当0被取完时，再取回答次数为1的，回答2次的不再抽取
+		double lambda = 0.9f;
+		
+		Student luckyStu;
+//		int teamNum = Integer.valueOf(students.get(students.size()-1).getTeam());
+//		int peopleNum = students.size();
+		//整除多加1的原因是因为增加容错率，但几乎可以忽略，因为正常情况下无法整除,teamNum*3/peopleNum的期望为1.5
+//		int maxAnswer = ((teamNum*3) % peopleNum == 0) ?
+//				((teamNum*3) / peopleNum + 1) : ((teamNum*3) / peopleNum + 1);
+		
+		int answer_num = 0;
+		double random;
+		
+		//将回答次数为0与为1的放入各自的集合
+		List<Student> stu0 = new ArrayList<Student>();
+		List<Student> stu1 = new ArrayList<Student>();
+		
+		for (Student student : students) {
+			//标志该学生是否能被放入学生池中
+			boolean judge = true;
+			if(tempStu.size() != 0){
+				for (Student answered_stu : tempStu) {
+					if(answered_stu.getName().equals(student.getName())){
+						judge = false;
+					}
+				}
+			}
+			//如果判断不能放入，则跳过该学生
+			if(!judge){
+				continue;
+			}
+			
+			answer_num = Integer.valueOf(student.getAnswer_num());
+			if(answer_num == 0) {
+				stu0.add(student);
+			} else if(answer_num == 1) {
+				stu1.add(student);
+			}
+		}
+ 		random = Math.random();
+ 		if(random < lambda){
+ 			if(stu0.size() != 0) {
+ 				//随机抽取
+ 				int index = (int)(Math.random() * stu0.size());
+ 				luckyStu = stu0.get(index);
+ 			} else {
+ 				//回答0次不存在，则从回答1次的中间抽取
+ 				int index = (int)(Math.random() * stu1.size());
+ 				luckyStu = stu1.get(index);
+ 			}
+ 		} else {
+ 			if(stu1.size() != 0) {
+ 				int index = (int)(Math.random() * stu1.size());
+ 				luckyStu = stu1.get(index);
+ 			} else {
+ 				//回答1次的不存在，则从回答0次的中间抽取
+ 				int index = (int)(Math.random() * stu0.size());
+ 				luckyStu = stu0.get(index);
+ 			}
+ 		}
+ 		answer_num = Integer.valueOf(luckyStu.getAnswer_num());
+		//回答数加一
+		luckyStu.setAnswer_num( (answer_num+1) + "" );
+		//存储器+1
+		tempStu.add(luckyStu);
+ 		return luckyStu;
 	}
 }
