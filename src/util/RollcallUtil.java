@@ -207,6 +207,7 @@ public class RollcallUtil {
 	 * 限制：目前完成的是最大回答为2的情况，暂时并未扩展
 	 * @param students
 	 * @param today_team
+	 * @param tempStu 存储已经选中的提问者
 	 * @return
 	 */
 	private static Student getLuckyStu3(List<Student> students, String today_team, List<Student> tempStu){
@@ -230,6 +231,7 @@ public class RollcallUtil {
 		
 		for (Student student : students) {
 			//标志该学生是否能被放入学生池中
+			//重复的提问者无法被选中
 			boolean judge = true;
 			if(tempStu.size() != 0){
 				for (Student answered_stu : tempStu) {
@@ -238,8 +240,14 @@ public class RollcallUtil {
 					}
 				}
 			}
+			//获取当前的学生组号
+			String team_num = student.getTeam();
+			
 			//如果判断不能放入，则跳过该学生
 			if(!judge){
+				continue;
+			} else if(team_num.equals(today_team)){
+				//无法取到当前组的学生
 				continue;
 			}
 			
